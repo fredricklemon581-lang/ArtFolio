@@ -3302,7 +3302,7 @@
             });
         }
 
-        // Performance monitoring
+        // Performance monitoring - Fixed scroll performance detection
         function initializePerformanceMonitoring() {
             // Monitor page load time (only if performance API is available)
             if (window.performance && window.performance.timing) {
@@ -3314,32 +3314,55 @@
                         
                         // Only log if we have valid timing data
                         if (loadTime > 0 && loadTime < 60000) { // Less than 60 seconds
-                            console.log('Page load time:', loadTime + 'ms');
+                            console.log('⚡ Page load time:', loadTime + 'ms');
                             
                             if (loadTime > 3000) {
-                                console.warn('Slow page load detected:', loadTime + 'ms');
+                                console.warn('⚠️ Slow page load detected:', loadTime + 'ms');
                             }
                         }
                     }, 100);
                 });
             }
             
-            // Simplified scroll performance monitoring
-            let lastScrollTime = performance.now();
+            // Improved scroll performance monitoring
+            let lastScrollTime = 0;
             let scrollWarningCount = 0;
-            const maxScrollWarnings = 3; // Limit warnings to avoid spam
+            const maxScrollWarnings = 2; // Reduce warnings further
+            let isScrolling = false;
             
             window.addEventListener('scroll', function() {
                 if (scrollWarningCount >= maxScrollWarnings) return;
                 
                 const now = performance.now();
+                
+                // Only start measuring after the first scroll event
+                if (lastScrollTime === 0) {
+                    lastScrollTime = now;
+                    return;
+                }
+                
+                // Only check performance during active scrolling
+                if (!isScrolling) {
+                    isScrolling = true;
+                    lastScrollTime = now;
+                    
+                    // Clear the scrolling flag after a delay
+                    setTimeout(() => {
+                        isScrolling = false;
+                    }, 100);
+                    return;
+                }
+                
                 const scrollDuration = now - lastScrollTime;
                 
-                // Only check if enough time has passed and we have a meaningful measurement
-                if (scrollDuration > 100 && scrollDuration > 32) { // 32ms = ~30fps
+                // Only warn about genuinely problematic scroll performance
+                // (anything over 50ms between scroll events indicates issues)
+                if (isScrolling && scrollDuration > 50 && scrollDuration < 1000) {
                     scrollWarningCount++;
-                    if (scrollWarningCount <= maxScrollWarnings) {
-                        console.warn('Scroll performance issue detected. Duration:', Math.round(scrollDuration) + 'ms');
+                    console.warn('⚠️ Scroll performance issue detected. Frame time:', Math.round(scrollDuration) + 'ms');
+                    
+                    if (scrollWarningCount >= maxScrollWarnings) {
+                        console.log('📊 Scroll performance monitoring disabled (max warnings reached)');
                     }
                 }
                 
@@ -3394,7 +3417,7 @@
             });
         }
 
-        // Advanced analytics (placeholder for real implementation)
+        // Advanced analytics - Fixed object logging issue
         function initializeAnalytics() {
             // Track user interactions
             const trackEvent = (category, action, label) => {
@@ -3403,51 +3426,72 @@
                     category: category,
                     action: action,
                     label: label || 'N/A',
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    url: window.location.pathname
                 };
                 
-                console.log('Analytics Event:', eventData);
+                // Properly formatted console log
+                console.log('📊 Analytics:', 
+                    `${eventData.category} → ${eventData.action}` + 
+                    (eventData.label !== 'N/A' ? ` → ${eventData.label}` : '')
+                );
+                
                 // In real implementation, send to analytics service like Google Analytics
                 // gtag('event', action, { event_category: category, event_label: label });
             };
             
-            // Track button clicks with throttling to avoid spam
-            const clickedButtons = new Set();
-            document.querySelectorAll('button, .btn-primary, .btn-secondary, .cta-button').forEach(btn => {
+            // Track button clicks with better throttling
+            const clickTracker = new Map(); // Use Map to track clicks per button
+            
+            document.querySelectorAll('button, .btn-primary, .btn-secondary, .cta-button').forEach((btn, index) => {
+                // Give each button a unique identifier
+                const buttonId = btn.id || `button-${index}`;
+                btn.dataset.trackId = buttonId;
+                
                 btn.addEventListener('click', function() {
-                    const buttonText = this.textContent.trim();
-                    const buttonId = this.id || 'unnamed-button';
+                    const buttonText = this.textContent.trim().substring(0, 30); // Limit text length
+                    const trackId = this.dataset.trackId;
                     
-                    // Avoid duplicate tracking for the same button
-                    if (!clickedButtons.has(buttonId)) {
+                    // Check if we recently tracked this button
+                    const lastClick = clickTracker.get(trackId);
+                    const now = Date.now();
+                    
+                    if (!lastClick || now - lastClick > 2000) { // 2 second cooldown
                         trackEvent('User Interaction', 'Button Click', buttonText);
-                        clickedButtons.add(buttonId);
-                        
-                        // Remove from set after a delay to allow re-tracking
-                        setTimeout(() => {
-                            clickedButtons.delete(buttonId);
-                        }, 2000);
+                        clickTracker.set(trackId, now);
                     }
                 });
             });
             
-            // Track section views with throttling
-            const viewedSections = new Set();
+            // Track section views with better throttling
+            const viewedSections = new Map();
+            
             const sectionObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-                        const sectionId = entry.target.id || entry.target.className.split(' ')[0] || 'unknown-section';
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+                        const sectionId = entry.target.id || 
+                                        entry.target.className.split(' ')[0] || 
+                                        'unnamed-section';
                         
-                        if (!viewedSections.has(sectionId)) {
+                        const lastView = viewedSections.get(sectionId);
+                        const now = Date.now();
+                        
+                        if (!lastView || now - lastView > 5000) { // 5 second cooldown
                             trackEvent('Page Engagement', 'Section View', sectionId);
-                            viewedSections.add(sectionId);
+                            viewedSections.set(sectionId, now);
                         }
                     }
                 });
-            }, { threshold: 0.5 });
+            }, { 
+                threshold: 0.6,
+                rootMargin: '-50px 0px' // Only trigger when section is well in view
+            });
             
-            document.querySelectorAll('section').forEach(section => {
-                sectionObserver.observe(section);
+            // Only observe main sections to reduce noise
+            document.querySelectorAll('section[id]').forEach(section => {
+                if (section.id) { // Only sections with IDs
+                    sectionObserver.observe(section);
+                }
             });
             
             // Track time on page (only once when leaving)
@@ -3457,18 +3501,17 @@
             const trackTimeOnPage = () => {
                 if (!timeTracked) {
                     const timeOnPage = Math.round((Date.now() - startTime) / 1000);
-                    if (timeOnPage > 5) { // Only track if user stayed more than 5 seconds
-                        trackEvent('Engagement', 'Time on Page', timeOnPage + ' seconds');
+                    if (timeOnPage > 10) { // Only track if user stayed more than 10 seconds
+                        trackEvent('Engagement', 'Session Duration', `${timeOnPage}s`);
                         timeTracked = true;
                     }
                 }
             };
             
+            // Track on page unload and visibility change
             window.addEventListener('beforeunload', trackTimeOnPage);
-            
-            // Also track when user switches tabs (indicates engagement)
             document.addEventListener('visibilitychange', function() {
-                if (document.hidden) {
+                if (document.hidden && !timeTracked) {
                     trackTimeOnPage();
                 }
             });
