@@ -1,0 +1,3812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtFolio AI - 智能作品集网站生成平台</title>
+    <meta name="description" content="ArtFolio AI是专为创意人士打造的智能作品集网站生成平台，通过AI技术自动分析作品内容，生成专业的个人作品集网站。">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --accent-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --text-light: #9ca3af;
+            --bg-light: #f9fafb;
+            --bg-white: #ffffff;
+            --bg-dark: #111827;
+            --border-light: #e5e7eb;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-warm: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --gradient-cool: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --gradient-purple: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+            --gradient-ocean: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            background: var(--bg-white);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .container-wide {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-lg);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background: var(--gradient-primary);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 1px;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-dark);
+            padding: 0.6rem 1.2rem;
+            border: 1.5px solid var(--border-light);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .cta-button {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.75rem 1.8rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-md);
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            background: var(--bg-light);
+        }
+
+        .mobile-menu-toggle span {
+            width: 25px;
+            height: 2px;
+            background: var(--text-dark);
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 1px;
+        }
+
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: var(--shadow-lg);
+            border-radius: 0 0 16px 16px;
+            padding: 2rem;
+        }
+
+        .mobile-nav.active {
+            display: block;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: var(--gradient-primary);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>') repeat;
+            animation: float 25s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .hero-badge:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 4rem;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border-radius: 16px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border-radius: 16px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            transform: translateY(-3px);
+        }
+
+        .hero-demo {
+            max-width: 1000px;
+            margin: 0 auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .demo-header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .demo-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .demo-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .demo-dot.red { background: #ff5f57; }
+        .demo-dot.yellow { background: #ffbd2e; }
+        .demo-dot.green { background: #28ca42; }
+
+        .demo-video {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .demo-video:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+        }
+
+        .play-button {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Statistics Section */
+        .stats {
+            background: white;
+            padding: 4rem 0;
+            position: relative;
+            z-index: 10;
+            margin-top: -2rem;
+        }
+
+        .stats-container {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-light);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-label {
+            color: var(--text-gray);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 0;
+            background: var(--bg-light);
+            position: relative;
+        }
+
+        .features::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(180deg, transparent 0%, var(--bg-light) 100%);
+            pointer-events: none;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-gray);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-top: 4rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .feature-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: white;
+            margin-right: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon::before {
+            transform: scale(1);
+        }
+
+        .feature-card:nth-child(1) .feature-icon { background: var(--gradient-primary); }
+        .feature-card:nth-child(2) .feature-icon { background: var(--gradient-secondary); }
+        .feature-card:nth-child(3) .feature-icon { background: var(--gradient-accent); }
+        .feature-card:nth-child(4) .feature-icon { background: var(--gradient-warm); }
+        .feature-card:nth-child(5) .feature-icon { background: var(--gradient-cool); }
+        .feature-card:nth-child(6) .feature-icon { background: var(--gradient-purple); }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: var(--text-gray);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .feature-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-link:hover {
+            gap: 0.8rem;
+        }
+
+        /* AI Showcase Section */
+        .ai-showcase {
+            padding: 6rem 0;
+            background: white;
+            position: relative;
+        }
+
+        .showcase-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .showcase-text h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .showcase-text p {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .showcase-features {
+            list-style: none;
+            margin-bottom: 2.5rem;
+        }
+
+        .showcase-features li {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 0;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .showcase-features .check {
+            width: 24px;
+            height: 24px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .showcase-visual {
+            background: var(--gradient-primary);
+            border-radius: 24px;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-brain {
+            width: 100%;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brain-icon {
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.8);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .ai-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float-particle 3s ease-in-out infinite;
+        }
+
+        @keyframes float-particle {
+            0%, 100% { transform: translateY(0px); opacity: 0; }
+            50% { transform: translateY(-30px); opacity: 1; }
+        }
+
+        /* How it works */
+        .how-it-works {
+            padding: 6rem 0;
+            background: var(--bg-light);
+            position: relative;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+            position: relative;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .step-number {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0 auto 2rem;
+            position: relative;
+            z-index: 2;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .step-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .step-description {
+            color: var(--text-gray);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        /* Portfolio Gallery */
+        .portfolio-gallery {
+            padding: 6rem 0;
+            background: white;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .gallery-item {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 250px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            position: relative;
+        }
+
+        .gallery-item:nth-child(2) .gallery-image { background: var(--gradient-secondary); }
+        .gallery-item:nth-child(3) .gallery-image { background: var(--gradient-accent); }
+        .gallery-item:nth-child(4) .gallery-image { background: var(--gradient-warm); }
+        .gallery-item:nth-child(5) .gallery-image { background: var(--gradient-cool); }
+        .gallery-item:nth-child(6) .gallery-image { background: var(--gradient-purple); }
+
+        .gallery-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .gallery-item:hover .gallery-overlay {
+            opacity: 1;
+        }
+
+        .gallery-info {
+            text-align: center;
+        }
+
+        .gallery-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .gallery-category {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 6rem 0;
+            background: var(--bg-light);
+            position: relative;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-top: 4rem;
+        }
+
+        .testimonial {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .testimonial::before {
+            content: '"';
+            position: absolute;
+            top: 1rem;
+            left: 1.5rem;
+            font-size: 4rem;
+            color: var(--primary-color);
+            opacity: 0.1;
+            font-family: serif;
+        }
+
+        .testimonial:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .testimonial-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .testimonial:nth-child(2) .author-avatar { background: var(--gradient-secondary); }
+        .testimonial:nth-child(3) .author-avatar { background: var(--gradient-accent); }
+        .testimonial:nth-child(4) .author-avatar { background: var(--gradient-warm); }
+        .testimonial:nth-child(5) .author-avatar { background: var(--gradient-cool); }
+        .testimonial:nth-child(6) .author-avatar { background: var(--gradient-purple); }
+
+        .author-info h4 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            font-size: 1.1rem;
+        }
+
+        .author-info p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+        }
+
+        .testimonial-rating {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .star {
+            color: #fbbf24;
+            font-size: 1.2rem;
+        }
+
+        /* Pricing */
+        .pricing {
+            padding: 6rem 0;
+            background: white;
+            position: relative;
+        }
+
+        .pricing-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .toggle-container {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .toggle-option {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: var(--text-gray);
+        }
+
+        .toggle-option.active {
+            background: white;
+            color: var(--text-dark);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 4rem;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: var(--shadow-md);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .pricing-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary-color);
+            transform: scale(1.02);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .pricing-card.featured::before {
+            transform: scaleX(1);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.6rem 1.8rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-md);
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .pricing-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .pricing-card:nth-child(2) .pricing-icon { background: var(--gradient-secondary); }
+        .pricing-card:nth-child(3) .pricing-icon { background: var(--gradient-accent); }
+
+        .pricing-plan {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .pricing-currency {
+            font-size: 1.5rem;
+        }
+
+        .pricing-period {
+            color: var(--text-gray);
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 3rem;
+        }
+
+        .pricing-features li {
+            padding: 0.8rem 0;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+            border-bottom: 1px solid var(--bg-light);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features .check-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .pricing-button {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-color);
+            transition: left 0.3s ease;
+            z-index: 1;
+        }
+
+        .pricing-button span {
+            position: relative;
+            z-index: 2;
+        }
+
+        .pricing-button:hover::before {
+            left: 0;
+        }
+
+        .pricing-button:hover,
+        .pricing-card.featured .pricing-button {
+            color: white;
+        }
+
+        .pricing-card.featured .pricing-button {
+            background: var(--primary-color);
+        }
+
+        /* Newsletter Section */
+        .newsletter {
+            background: var(--gradient-primary);
+            padding: 5rem 0;
+            color: white;
+            text-align: center;
+        }
+
+        .newsletter h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .newsletter p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .newsletter-form {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .newsletter-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 1.2rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .newsletter-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .newsletter-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .newsletter-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 1.2rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .newsletter-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* FAQ Section */
+        .faq {
+            padding: 6rem 0;
+            background: var(--bg-light);
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 2rem;
+            background: transparent;
+            border: none;
+            text-align: left;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question:hover {
+            color: var(--primary-color);
+        }
+
+        .faq-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+        }
+
+        .faq-answer-content {
+            padding: 0 2rem 2rem;
+            color: var(--text-gray);
+            line-height: 1.7;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-dark);
+            color: white;
+            padding: 4rem 0 2rem;
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gradient-primary);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand {
+            max-width: 350px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .footer-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-link {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .social-link:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1.5rem;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-copyright {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .footer-links-bottom {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links-bottom a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links-bottom a:hover {
+            color: white;
+        }
+
+        /* Loading States and Animations */
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scroll Progress Bar */
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        /* Scroll to Top Button */
+        .scroll-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .scroll-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-gray);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            z-index: 10001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: var(--gradient-secondary);
+        }
+
+        .toast.success {
+            background: var(--secondary-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .container-wide {
+                max-width: 1000px;
+            }
+            
+            .hero h1 {
+                font-size: 3.5rem;
+            }
+            
+            .section-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+            }
+
+            .nav-actions {
+                gap: 0.5rem;
+            }
+
+            .btn-ghost {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .section-subtitle {
+                font-size: 1rem;
+            }
+
+            .features-grid,
+            .steps,
+            .pricing-cards,
+            .testimonials-grid,
+            .gallery-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+            }
+
+            .showcase-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .newsletter-form {
+                flex-direction: column;
+            }
+
+            .newsletter-input {
+                min-width: auto;
+            }
+
+            .container,
+            .container-wide {
+                padding: 0 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .pricing-price {
+                font-size: 2.5rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 2rem;
+                margin: 1rem;
+            }
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-white: #1f2937;
+                --bg-light: #111827;
+                --text-dark: #f9fafb;
+                --text-gray: #d1d5db;
+                --border-light: #374151;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .header,
+            .scroll-indicator,
+            .scroll-to-top,
+            .modal,
+            .toast {
+                display: none !important;
+            }
+            
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            
+            .hero {
+                background: white !important;
+                color: black !important;
+                min-height: auto;
+                padding: 2rem 0;
+            }
+        }
+
+        /* High Contrast Mode */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary-color: #0000ff;
+                --secondary-color: #008000;
+                --text-gray: #000000;
+                --border-light: #000000;
+            }
+            
+            .feature-card,
+            .pricing-card,
+            .testimonial {
+                border: 2px solid #000000;
+            }
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .hero::before {
+                animation: none;
+            }
+            
+            .particle {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll Progress -->
+    <div class="scroll-indicator" id="scrollIndicator"></div>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <nav class="container">
+            <div class="nav">
+                <div class="logo" onclick="window.location.reload()">
+                    <div class="logo-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <span>ArtFolio AI</span>
+                </div>
+                
+                <ul class="nav-links">
+                    <li><a href="#home">首页</a></li>
+                    <li><a href="#features">功能</a></li>
+                    <li><a href="#showcase">AI展示</a></li>
+                    <li><a href="#how-it-works">使用流程</a></li>
+                    <li><a href="#gallery">案例</a></li>
+                    <li><a href="#pricing">价格</a></li>
+                    <li><a href="#testimonials">评价</a></li>
+                </ul>
+                
+                <div class="nav-actions">
+                    <a href="#" class="btn-ghost">登录</a>
+                    <button class="cta-button" onclick="showSignupModal()">
+                        <i class="fas fa-rocket"></i> 免费开始
+                    </button>
+                </div>
+                
+                <div class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            
+            <div class="mobile-nav" id="mobileNav">
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 1rem;"><a href="#home" style="color: var(--text-dark); text-decoration: none;">首页</a></li>
+                    <li style="margin-bottom: 1rem;"><a href="#features" style="color: var(--text-dark); text-decoration: none;">功能</a></li>
+                    <li style="margin-bottom: 1rem;"><a href="#pricing" style="color: var(--text-dark); text-decoration: none;">价格</a></li>
+                    <li style="margin-bottom: 2rem;"><a href="#testimonials" style="color: var(--text-dark); text-decoration: none;">评价</a></li>
+                    <li><button class="cta-button" style="width: 100%;">免费开始</button></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-sparkles"></i>
+                    <span>基于最新AI技术 · 已服务10,000+创意人士</span>
+                </div>
+                
+                <h1 id="heroTitle">让AI为你打造<br>专业作品集网站</h1>
+                
+                <p class="hero-subtitle">
+                    革命性的AI驱动平台，深度分析你的创意作品，3分钟自动生成个人专属的作品集网站。
+                    专为摄影师、设计师、艺术家量身定制，让你的才华闪闪发光。
+                </p>
+                
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="showSignupModal()">
+                        <i class="fas fa-rocket"></i>
+                        <span>立即开始创建</span>
+                    </button>
+                    <a href="#showcase" class="btn-secondary">
+                        <i class="fas fa-play-circle"></i>
+                        <span>观看演示</span>
+                    </a>
+                </div>
+                
+                <div class="hero-demo">
+                    <div class="demo-header">
+                        <div class="demo-dots">
+                            <div class="demo-dot red"></div>
+                            <div class="demo-dot yellow"></div>
+                            <div class="demo-dot green"></div>
+                        </div>
+                    </div>
+                    <div class="demo-video" onclick="showDemoModal()">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats" id="stats">
+        <div class="container">
+            <div class="stats-container">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="10000">0</span>
+                        <div class="stat-label">创意人士的选择</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="50000">0</span>
+                        <div class="stat-label">生成作品集网站</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="98">0</span>
+                        <div class="stat-label">用户满意度 %</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="24">0</span>
+                        <div class="stat-label">小时客服支持</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">
+                    <i class="fas fa-magic"></i>
+                    <span>核心功能</span>
+                </div>
+                <h2 class="section-title">为什么选择 ArtFolio AI？</h2>
+                <p class="section-subtitle">
+                    结合最新AI技术与专业设计理念，为创意人士提供前所未有的智能建站体验，让每一个作品都得到最完美的展示
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <h3 class="feature-title">智能作品分析</h3>
+                        </div>
+                    </div>
+                    <p class="feature-description">
+                        先进的计算机视觉技术深度解析你的每一件作品，自动识别风格特征、色彩构成、艺术技法和情感表达，生成专业级的作品描述和分类标签。
+                    </p>
+                    <a href="#" class="feature-link">
+                        了解更多 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div>
+                            <h3 class="feature-title">个性化设计生成</h3>
+                        </div>
+                    </div>
+                    <p class="feature-description">
+                        基于作品特征智能匹配最佳展示模板，自动提取主色调生成专属配色方案，调整字体搭配和布局密度，确保每个网站都独一无二。
+                    </p>
+                    <a href="#" class="feature-link">
+                        查看模板 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <div>
+                            <h3 class="feature-title">一键生成发布</h3>
+                        </div>
+                    </div>
+                    <p class="feature-description">
+                        无需任何编程知识，从上传作品到网站上线仅需3分钟。支持自定义域名、SEO优化、移动端适配，一键发布即可拥有专业作品集网站。
+                    </p>
+                    <a href="#" class="feature-link">
+                        立即体验 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <h3 class="feature-title">智能持续优化</h3>
+                        </div>
+                    </div>
+                    <p class="feature-description">
+                        AI持续学习访客行为数据，自动优化作品展示顺序、调整页面布局、提升加载速度，让你的网站始终保持最佳表现状态。
+                    </p>
+                    <a href="#" class="feature-link">
+                        查看案例 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="feature-title">完美多端体验</h3>
+                        </div>
+                    </div>
+                    <p class="feature-description">
+                        响应式设计确保在手机、平板、电脑等所有设备上都有完美的展示效果。自动压缩优化图片，提供闪电般的加载速度。
+                    </p>
+                    <a href="#" class="feature-link">
+                        测试体验 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="feature-title">全方位版权保护</h3>
+                        </div>
+                    </div>
+                    <p class="feature-description">
+                        内置多重版权保护机制，包括智能水印添加、右键保护、图片防盗链等功能，全方位保护你的创意作品不被盗用。
+                    </p>
+                    <a href="#" class="feature-link">
+                        了解保护 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Showcase Section -->
+    <section class="ai-showcase" id="showcase">
+        <div class="container">
+            <div class="showcase-content">
+                <div class="showcase-text">
+                    <div class="section-badge">
+                        <i class="fas fa-robot"></i>
+                        <span>AI技术展示</span>
+                    </div>
+                    <h2>先进AI技术，理解你的创意语言</h2>
+                    <p>
+                        我们的AI系统经过数百万件艺术作品训练，能够深度理解不同艺术风格、技法特点和情感表达。
+                        无论是摄影作品的光影构图，还是设计作品的色彩搭配，AI都能精准分析并生成专业描述。
+                    </p>
+                    <ul class="showcase-features">
+                        <li>
+                            <div class="check"><i class="fas fa-check"></i></div>
+                            <span>多模态内容分析：图片、视频、3D模型全支持</span>
+                        </li>
+                        <li>
+                            <div class="check"><i class="fas fa-check"></i></div>
+                            <span>风格识别准确率达95%以上</span>
+                        </li>
+                        <li>
+                            <div class="check"><i class="fas fa-check"></i></div>
+                            <span>支持12种语言的内容生成</span>
+                        </li>
+                        <li>
+                            <div class="check"><i class="fas fa-check"></i></div>
+                            <span>实时学习优化，持续提升效果</span>
+                        </li>
+                    </ul>
+                    <button class="btn-primary" onclick="showDemoModal()">
+                        <i class="fas fa-play"></i>
+                        <span>观看AI演示</span>
+                    </button>
+                </div>
+                <div class="showcase-visual">
+                    <div class="ai-brain">
+                        <div class="brain-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="ai-particles">
+                            <div class="particle" style="left: 20%; animation-delay: 0s;"></div>
+                            <div class="particle" style="left: 40%; animation-delay: 0.5s;"></div>
+                            <div class="particle" style="left: 60%; animation-delay: 1s;"></div>
+                            <div class="particle" style="left: 80%; animation-delay: 1.5s;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">
+                    <i class="fas fa-cogs"></i>
+                    <span>使用流程</span>
+                </div>
+                <h2 class="section-title">三步创建专业作品集</h2>
+                <p class="section-subtitle">
+                    简化复杂的建站流程，让创作者专注于创作本身。AI为你处理所有技术细节，从分析到发布全程自动化
+                </p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">智能上传分析</h3>
+                    <p class="step-description">
+                        拖拽上传你的创意作品，支持批量处理。AI自动识别文件格式，提取关键信息，
+                        分析艺术风格和技术特点，为每件作品生成专业标签和描述。
+                    </p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">个性化定制</h3>
+                    <p class="step-description">
+                        基于作品分析结果，AI智能推荐最适合的展示模板和配色方案。
+                        你可以实时预览效果，微调布局细节，确保每个细节都符合你的审美偏好。
+                    </p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">一键发布上线</h3>
+                    <p class="step-description">
+                        确认设计后，一键发布到自定义域名。自动进行SEO优化，
+                        生成社交媒体分享卡片，确保你的作品集能够被更多人发现和欣赏。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Gallery -->
+    <section class="portfolio-gallery" id="gallery">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">
+                    <i class="fas fa-images"></i>
+                    <span>成功案例</span>
+                </div>
+                <h2 class="section-title">优秀作品集展示</h2>
+                <p class="section-subtitle">
+                    来自全球创意人士的精彩作品集案例，见证AI技术如何完美展现每一份创意才华
+                </p>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item" onclick="openGalleryItem('photographer')">
+                    <div class="gallery-image">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <div class="gallery-title">Alex Chen 摄影作品集</div>
+                            <div class="gallery-category">人像摄影师</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="openGalleryItem('designer')">
+                    <div class="gallery-image">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <div class="gallery-title">Maria Design Studio</div>
+                            <div class="gallery-category">品牌设计</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="openGalleryItem('artist')">
+                    <div class="gallery-image">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <div class="gallery-title">David Art Collection</div>
+                            <div class="gallery-category">数字艺术</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="openGalleryItem('architect')">
+                    <div class="gallery-image">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <div class="gallery-title">Modern Architecture</div>
+                            <div class="gallery-category">建筑设计</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="openGalleryItem('illustrator')">
+                    <div class="gallery-image">
+                        <i class="fas fa-pen-nib"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <div class="gallery-title">Sarah Illustrations</div>
+                            <div class="gallery-category">插画设计</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="openGalleryItem('3d')">
+                    <div class="gallery-image">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <div class="gallery-title">3D Modeling Works</div>
+                            <div class="gallery-category">3D建模</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">
+                    <i class="fas fa-tags"></i>
+                    <span>价格方案</span>
+                </div>
+                <h2 class="section-title">选择适合你的计划</h2>
+                <p class="section-subtitle">
+                    从个人创作者到专业工作室，我们提供灵活的定价方案满足不同阶段的需求
+                </p>
+            </div>
+            
+            <div class="pricing-toggle">
+                <div class="toggle-container">
+                    <button class="toggle-option active" onclick="switchPricing('monthly')">月付</button>
+                    <button class="toggle-option" onclick="switchPricing('yearly')">年付 (节省20%)</button>
+                </div>
+            </div>
+            
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <div class="pricing-icon">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <div class="pricing-plan">Creative Starter</div>
+                        <div class="pricing-price">
+                            <span class="pricing-currency">¥</span>
+                            <span class="price-amount">0</span>
+                        </div>
+                        <div class="pricing-period">永久免费</div>
+                    </div>
+                    
+                    <ul class="pricing-features">
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>20个作品存储</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>1个作品集网站</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>500MB存储空间</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>每月10次AI分析</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>3个基础模板</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>子域名支持</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>基础客服支持</li>
+                    </ul>
+                    
+                    <button class="pricing-button" onclick="selectPlan('free')">
+                        <span>立即开始</span>
+                    </button>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">最受欢迎</div>
+                    <div class="pricing-header">
+                        <div class="pricing-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <div class="pricing-plan">Creative Pro</div>
+                        <div class="pricing-price">
+                            <span class="pricing-currency">¥</span>
+                            <span class="price-amount">99</span>
+                        </div>
+                        <div class="pricing-period">/月</div>
+                    </div>
+                    
+                    <ul class="pricing-features">
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>无限作品存储</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>5个作品集网站</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>10GB存储空间</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>无限AI分析</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>所有专业模板</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>自定义域名</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>高级分析功能</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>优先客服支持</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>SEO优化工具</li>
+                    </ul>
+                    
+                    <button class="pricing-button" onclick="selectPlan('pro')">
+                        <span>立即升级</span>
+                    </button>
+                </div>
+                
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <div class="pricing-icon">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="pricing-plan">Creative Master</div>
+                        <div class="pricing-price">
+                            <span class="pricing-currency">¥</span>
+                            <span class="price-amount">299</span>
+                        </div>
+                        <div class="pricing-period">/月</div>
+                    </div>
+                    
+                    <ul class="pricing-features">
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>无限作品存储</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>无限作品集网站</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>100GB存储空间</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>无限AI分析</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>白标解决方案</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>专属模板定制</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>营销工具套件</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>专属客户经理</li>
+                        <li><div class="check-icon"><i class="fas fa-check"></i></div>API接口访问</li>
+                    </ul>
+                    
+                    <button class="pricing-button" onclick="selectPlan('master')">
+                        <span>联系销售</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">
+                    <i class="fas fa-heart"></i>
+                    <span>用户评价</span>
+                </div>
+                <h2 class="section-title">来自全球创意人士的真实反馈</h2>
+                <p class="section-subtitle">
+                    超过10,000名用户的信赖选择，听听他们是如何通过ArtFolio AI提升作品展示效果的
+                </p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "ArtFolio AI完全改变了我展示作品的方式！作为一名摄影师，我之前总是为如何完美展示照片而苦恼。
+                            现在AI能自动分析我的作品风格，生成的网站比我自己设计的还要专业。客户反馈非常积极！"
+                        </p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">LZ</div>
+                            <div class="author-info">
+                                <h4>李志明</h4>
+                                <p>自由摄影师 · 北京</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "AI分析我的设计作品非常准确，生成的网站风格完美契合我的品牌调性。从上传到发布只用了5分钟，
+                            但效果却像是花了几周时间精心制作的。已经通过新网站获得了3个大项目！"
+                        </p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">WX</div>
+                            <div class="author-info">
+                                <h4>王晓雨</h4>
+                                <p>UI/UX设计师 · 上海</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "最让我惊喜的是智能优化功能！AI会根据访客行为自动调整我的作品展示顺序，
+                            网站访问量比之前提升了300%。这种数据驱动的优化让我的作品获得了更多曝光。"
+                        </p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">ZH</div>
+                            <div class="author-info">
+                                <h4>张华</h4>
+                                <p>插画师 · 广州</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "作为艺术学院的学生，这个平台帮我轻松创建了毕业作品集。AI生成的作品描述比我自己写的还要专业，
+                            导师和同学都对网站的质量印象深刻。强烈推荐给所有艺术专业的学生！"
+                        </p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">LC</div>
+                            <div class="author-info">
+                                <h4>刘晨</h4>
+                                <p>艺术学院学生 · 杭州</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "我们工作室的每个设计师都在使用ArtFolio AI。统一的专业展示标准让我们在客户面前更有说服力。
+                            团队协作功能也很实用，可以轻松管理所有成员的作品集。"
+                        </p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">ST</div>
+                            <div class="author-info">
+                                <h4>孙婷</h4>
+                                <p>平面设计师 · 深圳</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "版权保护功能给了我很大的安全感。智能水印和防盗链保护让我可以放心地展示高清作品，
+                            不用担心被恶意盗用。客服团队也非常专业，总是能及时解决我的问题。"
+                        </p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">MD</div>
+                            <div class="author-info">
+                                <h4>马东</h4>
+                                <p>建筑设计师 · 成都</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter">
+        <div class="container">
+            <h2>订阅我们的创意资讯</h2>
+            <p>获取最新的设计趋势、AI技术动态和平台功能更新，让你的创意之路更加精彩</p>
+            <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+                <input 
+                    type="email" 
+                    class="newsletter-input" 
+                    placeholder="输入你的邮箱地址" 
+                    required
+                >
+                <button type="submit" class="newsletter-button">
+                    <i class="fas fa-paper-plane"></i> 订阅
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">
+                    <i class="fas fa-question-circle"></i>
+                    <span>常见问题</span>
+                </div>
+                <h2 class="section-title">常见问题解答</h2>
+                <p class="section-subtitle">
+                    为你解答使用过程中可能遇到的问题，帮助你更好地使用ArtFolio AI
+                </p>
+            </div>
+            
+            <div class="faq-container">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>AI是如何分析我的作品的？分析准确吗？</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            我们使用最先进的计算机视觉和深度学习技术，通过分析图像的色彩构成、构图规律、纹理特征等多个维度来理解作品风格。
+                            AI模型经过数百万件艺术作品训练，对摄影、设计、绘画等各个领域都有深度理解，准确率超过95%。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>生成的网站可以自定义修改吗？</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            当然可以！AI生成的只是初始设计，你可以随时调整颜色、字体、布局、内容等任何元素。
+                            我们提供直观的可视化编辑器，即使没有设计经验也能轻松定制出符合个人风格的网站。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>支持哪些文件格式？有大小限制吗？</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            支持主流的图片格式（JPG、PNG、GIF、WebP、SVG）、视频格式（MP4、MOV、AVI）、3D模型格式（OBJ、FBX、GLTF）等。
+                            图片单个文件最大20MB，视频最大100MB，3D模型最大50MB。我们会自动优化文件大小确保加载速度。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>如何保护我的作品版权？</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            我们提供多重版权保护机制：智能水印自动添加、图片防盗链保护、右键禁用功能、低分辨率预览等。
+                            同时支持自定义版权声明和联系信息，全方位保护你的创意作品不被恶意使用。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>免费版有什么限制？升级后有哪些优势？</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            免费版可以创建1个作品集网站，存储20件作品，使用基础模板。升级Pro版后可享受无限作品存储、
+                            所有高级模板、自定义域名、高级分析功能、优先客服等特权，让你的作品展示更加专业。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        <span>生成的网站移动端效果如何？</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            所有模板都采用响应式设计，自动适配手机、平板、电脑等各种设备。
+                            AI会针对移动端优化图片尺寸和加载速度，确保在任何设备上都有完美的浏览体验。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="newsletter" style="background: var(--gradient-ocean);">
+        <div class="container">
+            <h2>准备好让AI为你打造专业作品集了吗？</h2>
+            <p>加入超过10,000名创意人士的行列，让你的才华在数字世界中闪闪发光</p>
+            <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-top: 2.5rem;">
+                <button class="btn-primary" onclick="showSignupModal()" style="background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4);">
+                    <i class="fas fa-rocket"></i>
+                    <span>免费开始创建</span>
+                </button>
+                <a href="#pricing" class="btn-secondary" style="border-color: rgba(255,255,255,0.6); color: white;">
+                    <i class="fas fa-credit-card"></i>
+                    <span>查看定价</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <div class="footer-logo-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <span>ArtFolio AI</span>
+                    </div>
+                    <p class="footer-description">
+                        革命性的AI驱动作品集平台，为全球创意人士提供智能、专业、美观的作品展示解决方案。
+                        让每一份创意都得到完美的数字化展现。
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" title="微信"><i class="fab fa-weixin"></i></a>
+                        <a href="#" class="social-link" title="微博"><i class="fab fa-weibo"></i></a>
+                        <a href="#" class="social-link" title="小红书"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link" title="GitHub"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>产品功能</h3>
+                    <ul class="footer-links">
+                        <li><a href="#features"><i class="fas fa-arrow-right"></i> AI作品分析</a></li>
+                        <li><a href="#features"><i class="fas fa-arrow-right"></i> 智能设计生成</a></li>
+                        <li><a href="#features"><i class="fas fa-arrow-right"></i> 一键发布</a></li>
+                        <li><a href="#features"><i class="fas fa-arrow-right"></i> 版权保护</a></li>
+                        <li><a href="#gallery"><i class="fas fa-arrow-right"></i> 模板库</a></li>
+                        <li><a href="#pricing"><i class="fas fa-arrow-right"></i> API接口</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>支持与服务</h3>
+                    <ul class="footer-links">
+                        <li><a href="#faq"><i class="fas fa-arrow-right"></i> 帮助中心</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 用户指南</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 视频教程</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 技术支持</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 联系我们</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 意见反馈</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>公司信息</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 关于我们</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 新闻动态</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 加入我们</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 合作伙伴</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 媒体资源</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> 投资者关系</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-copyright">
+                    <p>&copy; 2025 ArtFolio AI. 保留所有权利.</p>
+                </div>
+                <div class="footer-links-bottom">
+                    <a href="#">服务条款</a>
+                    <a href="#">隐私政策</a>
+                    <a href="#">版权声明</a>
+                    <a href="#">Cookie政策</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-to-top" id="scrollToTop" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Modals -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('signupModal')">&times;</button>
+            <div style="text-align: center; padding: 2rem 0;">
+                <div style="width: 80px; height: 80px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: white; font-size: 2rem;">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h2 style="margin-bottom: 1rem; color: var(--text-dark);">欢迎加入 ArtFolio AI</h2>
+                <p style="color: var(--text-gray); margin-bottom: 2rem;">开始你的创意之旅，让AI为你打造专业作品集</p>
+                <form style="max-width: 400px; margin: 0 auto;" onsubmit="handleSignup(event)">
+                    <div style="margin-bottom: 1.5rem;">
+                        <input type="text" placeholder="你的姓名" required style="width: 100%; padding: 1rem; border: 2px solid var(--border-light); border-radius: 8px; font-size: 1rem;">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <input type="email" placeholder="邮箱地址" required style="width: 100%; padding: 1rem; border: 2px solid var(--border-light); border-radius: 8px; font-size: 1rem;">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <select required style="width: 100%; padding: 1rem; border: 2px solid var(--border-light); border-radius: 8px; font-size: 1rem;">
+                            <option value="">选择你的专业领域</option>
+                            <option value="photographer">摄影师</option>
+                            <option value="designer">设计师</option>
+                            <option value="artist">艺术家</option>
+                            <option value="architect">建筑师</option>
+                            <option value="illustrator">插画师</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <button type="submit" style="width: 100%; padding: 1rem; background: var(--gradient-primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer;">
+                        立即注册
+                    </button>
+                </form>
+                <p style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-gray);">
+                    注册即表示同意我们的 <a href="#" style="color: var(--primary-color);">服务条款</a> 和 <a href="#" style="color: var(--primary-color);">隐私政策</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="demoModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('demoModal')">&times;</button>
+            <div style="text-align: center; padding: 2rem 0;">
+                <h2 style="margin-bottom: 2rem; color: var(--text-dark);">AI演示视频</h2>
+                <div style="width: 100%; height: 300px; background: var(--gradient-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; margin-bottom: 2rem;">
+                    <i class="fas fa-play"></i>
+                </div>
+                <p style="color: var(--text-gray); margin-bottom: 2rem;">观看AI如何智能分析和生成专业作品集网站</p>
+                <button class="btn-primary" onclick="closeModal('demoModal')">
+                    <i class="fas fa-rocket"></i> 立即体验
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Global variables
+        let isScrolling = false;
+        let lastScrollTop = 0;
+
+        // DOM Ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAnimations();
+            initializeCounters();
+            setupScrollEffects();
+            setupIntersectionObserver();
+            setupParticleAnimation();
+        });
+
+        // Scroll Effects
+        function setupScrollEffects() {
+            window.addEventListener('scroll', function() {
+                if (!isScrolling) {
+                    window.requestAnimationFrame(function() {
+                        updateScrollIndicator();
+                        updateHeaderState();
+                        updateScrollToTopButton();
+                        isScrolling = false;
+                    });
+                    isScrolling = true;
+                }
+            });
+        }
+
+        function updateScrollIndicator() {
+            const scrollTop = window.pageYOffset;
+            const docHeight = document.body.offsetHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.getElementById('scrollIndicator').style.width = scrollPercent + '%';
+        }
+
+        function updateHeaderState() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        }
+
+        function updateScrollToTopButton() {
+            const scrollToTopBtn = document.getElementById('scrollToTop');
+            if (window.pageYOffset > 500) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+        }
+
+        // Counter Animation
+        function initializeCounters() {
+            const counters = document.querySelectorAll('.stat-number');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounter(entry.target);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            counters.forEach(counter => observer.observe(counter));
+        }
+
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-count'));
+            const increment = target / 100;
+            let current = 0;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 20);
+        }
+
+        // Intersection Observer for animations
+        function setupIntersectionObserver() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in-up');
+                        
+                        // Add stagger effect for grid items
+                        if (entry.target.closest('.features-grid, .steps, .pricing-cards, .testimonials-grid, .gallery-grid')) {
+                            const index = Array.from(entry.target.parentNode.children).indexOf(entry.target);
+                            entry.target.style.animationDelay = `${index * 0.1}s`;
+                        }
+                        
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Observe elements
+            document.querySelectorAll('.feature-card, .step, .pricing-card, .testimonial, .gallery-item, .faq-item').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // Particle Animation
+        function setupParticleAnimation() {
+            const particleContainer = document.querySelector('.ai-particles');
+            if (!particleContainer) return;
+
+            // Create additional particles
+            for (let i = 0; i < 6; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.animationDuration = (2 + Math.random() * 2) + 's';
+                particleContainer.appendChild(particle);
+            }
+        }
+
+        // Navigation
+        function toggleMobileMenu() {
+            const mobileNav = document.getElementById('mobileNav');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            mobileNav.classList.toggle('active');
+            toggle.classList.toggle('active');
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const headerHeight = document.querySelector('.header').offsetHeight;
+                    const targetPosition = target.offsetTop - headerHeight;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    const mobileNav = document.getElementById('mobileNav');
+                    if (mobileNav.classList.contains('active')) {
+                        toggleMobileMenu();
+                    }
+                }
+            });
+        });
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Modal functions
+        function showSignupModal() {
+            document.getElementById('signupModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function showDemoModal() {
+            document.getElementById('demoModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on outside click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+
+        // Form handlers
+        function handleSignup(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            showToast('注册成功！欢迎加入ArtFolio AI！', 'success');
+            closeModal('signupModal');
+            
+            // Here you would typically send data to your backend
+            console.log('Signup data:', Object.fromEntries(formData));
+        }
+
+        function subscribeNewsletter(event) {
+            event.preventDefault();
+            const email = event.target.querySelector('input[type="email"]').value;
+            
+            showToast('订阅成功！感谢你的关注！', 'success');
+            event.target.reset();
+            
+            console.log('Newsletter subscription:', email);
+        }
+
+        // FAQ functions
+        function toggleFAQ(button) {
+            const faqItem = button.parentNode;
+            const isActive = faqItem.classList.contains('active');
+            
+            // Close all FAQ items
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Open clicked item if it wasn't active
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+        }
+
+        // Pricing functions
+        function switchPricing(period) {
+            const toggles = document.querySelectorAll('.toggle-option');
+            toggles.forEach(toggle => toggle.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            
+            // Update prices based on period
+            const prices = {
+                monthly: { pro: 99, master: 299 },
+                yearly: { pro: 79, master: 239 } // 20% discount
+            };
+            
+            document.querySelectorAll('.price-amount').forEach((el, index) => {
+                if (index === 1) el.textContent = prices[period].pro;
+                if (index === 2) el.textContent = prices[period].master;
+            });
+        }
+
+        function selectPlan(planType) {
+            const plans = {
+                free: '免费计划',
+                pro: '专业版',
+                master: '大师版'
+            };
+            
+            showToast(`你选择了${plans[planType]}！正在跳转到注册页面...`);
+            
+            setTimeout(() => {
+                showSignupModal();
+            }, 1500);
+        }
+
+        // Gallery functions
+        function openGalleryItem(type) {
+            const types = {
+                photographer: { title: 'Alex Chen 摄影作品集', category: '人像摄影师' },
+                designer: { title: 'Maria Design Studio', category: '品牌设计' },
+                artist: { title: 'David Art Collection', category: '数字艺术' },
+                architect: { title: 'Modern Architecture', category: '建筑设计' },
+                illustrator: { title: 'Sarah Illustrations', category: '插画设计' },
+                '3d': { title: '3D Modeling Works', category: '3D建模' }
+            };
+            
+            const item = types[type];
+            showToast(`正在打开 ${item.title} - ${item.category}`);
+        }
+
+        // Toast notifications
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize animations
+        function initializeAnimations() {
+            // Typing effect for hero title
+            const heroTitle = document.getElementById('heroTitle');
+            if (heroTitle) {
+                const text = heroTitle.textContent;
+                heroTitle.textContent = '';
+                typeWriter(heroTitle, text, 100);
+            }
+        }
+
+        function typeWriter(element, text, speed = 100) {
+            let i = 0;
+            
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            
+            setTimeout(type, 1000); // Start after 1 second
+        }
+
+        // Advanced hover effects
+        document.querySelectorAll('.feature-card, .pricing-card, .testimonial').forEach(card => {
+            card.addEventListener('mouseenter', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Create ripple effect
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(37, 99, 235, 0.1);
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    left: ${x}px;
+                    top: ${y}px;
+                    width: 100px;
+                    height: 100px;
+                    margin-left: -50px;
+                    margin-top: -50px;
+                    pointer-events: none;
+                `;
+                
+                this.style.position = 'relative';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add ripple animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Parallax effect for hero section (optimized)
+        function initializeParallaxEffect() {
+            let ticking = false;
+            
+            function updateParallax() {
+                const scrolled = window.pageYOffset;
+                const parallax = document.querySelector('.hero');
+                
+                if (parallax && scrolled < window.innerHeight) {
+                    const speed = scrolled * 0.3; // Reduced intensity
+                    parallax.style.transform = `translateY(${speed}px)`;
+                }
+                
+                ticking = false;
+            }
+            
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    requestAnimationFrame(updateParallax);
+                    ticking = true;
+                }
+            }, { passive: true });
+        }
+
+        // Advanced search functionality (for future implementation)
+        function initializeSearch() {
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = '搜索功能、案例、问题...';
+            searchInput.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 400px;
+                padding: 1rem 1.5rem;
+                border: none;
+                border-radius: 25px;
+                font-size: 1rem;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 10000;
+                display: none;
+            `;
+            
+            document.body.appendChild(searchInput);
+            
+            // Toggle search with Ctrl+K
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'k') {
+                    e.preventDefault();
+                    searchInput.style.display = searchInput.style.display === 'none' ? 'block' : 'none';
+                    if (searchInput.style.display === 'block') {
+                        searchInput.focus();
+                    }
+                }
+                
+                if (e.key === 'Escape') {
+                    searchInput.style.display = 'none';
+                }
+            });
+        }
+
+        // Performance monitoring
+        function initializePerformanceMonitoring() {
+            // Monitor page load time (only if performance API is available)
+            if (window.performance && window.performance.timing) {
+                window.addEventListener('load', function() {
+                    // Use a timeout to ensure all timing data is available
+                    setTimeout(() => {
+                        const navigation = performance.timing;
+                        const loadTime = navigation.loadEventEnd - navigation.navigationStart;
+                        
+                        // Only log if we have valid timing data
+                        if (loadTime > 0 && loadTime < 60000) { // Less than 60 seconds
+                            console.log('Page load time:', loadTime + 'ms');
+                            
+                            if (loadTime > 3000) {
+                                console.warn('Slow page load detected:', loadTime + 'ms');
+                            }
+                        }
+                    }, 100);
+                });
+            }
+            
+            // Simplified scroll performance monitoring
+            let lastScrollTime = performance.now();
+            let scrollWarningCount = 0;
+            const maxScrollWarnings = 3; // Limit warnings to avoid spam
+            
+            window.addEventListener('scroll', function() {
+                if (scrollWarningCount >= maxScrollWarnings) return;
+                
+                const now = performance.now();
+                const scrollDuration = now - lastScrollTime;
+                
+                // Only check if enough time has passed and we have a meaningful measurement
+                if (scrollDuration > 100 && scrollDuration > 32) { // 32ms = ~30fps
+                    scrollWarningCount++;
+                    if (scrollWarningCount <= maxScrollWarnings) {
+                        console.warn('Scroll performance issue detected. Duration:', Math.round(scrollDuration) + 'ms');
+                    }
+                }
+                
+                lastScrollTime = now;
+            }, { passive: true });
+        }
+
+        // Accessibility enhancements
+        function initializeAccessibility() {
+            // Add skip navigation link
+            const skipLink = document.createElement('a');
+            skipLink.href = '#main-content';
+            skipLink.textContent = '跳转到主要内容';
+            skipLink.style.cssText = `
+                position: absolute;
+                top: -40px;
+                left: 6px;
+                background: var(--primary-color);
+                color: white;
+                padding: 8px;
+                text-decoration: none;
+                border-radius: 4px;
+                z-index: 10000;
+                transition: top 0.3s;
+            `;
+            
+            skipLink.addEventListener('focus', function() {
+                this.style.top = '6px';
+            });
+            
+            skipLink.addEventListener('blur', function() {
+                this.style.top = '-40px';
+            });
+            
+            document.body.insertBefore(skipLink, document.body.firstChild);
+            
+            // Add main content landmark
+            const mainContent = document.querySelector('.hero');
+            if (mainContent) {
+                mainContent.id = 'main-content';
+            }
+            
+            // Enhance keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    document.body.classList.add('keyboard-navigation');
+                }
+            });
+            
+            document.addEventListener('mousedown', function() {
+                document.body.classList.remove('keyboard-navigation');
+            });
+        }
+
+        // Advanced analytics (placeholder for real implementation)
+        function initializeAnalytics() {
+            // Track user interactions
+            const trackEvent = (category, action, label) => {
+                // Create a proper analytics object for logging
+                const eventData = {
+                    category: category,
+                    action: action,
+                    label: label || 'N/A',
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('Analytics Event:', eventData);
+                // In real implementation, send to analytics service like Google Analytics
+                // gtag('event', action, { event_category: category, event_label: label });
+            };
+            
+            // Track button clicks with throttling to avoid spam
+            const clickedButtons = new Set();
+            document.querySelectorAll('button, .btn-primary, .btn-secondary, .cta-button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const buttonText = this.textContent.trim();
+                    const buttonId = this.id || 'unnamed-button';
+                    
+                    // Avoid duplicate tracking for the same button
+                    if (!clickedButtons.has(buttonId)) {
+                        trackEvent('User Interaction', 'Button Click', buttonText);
+                        clickedButtons.add(buttonId);
+                        
+                        // Remove from set after a delay to allow re-tracking
+                        setTimeout(() => {
+                            clickedButtons.delete(buttonId);
+                        }, 2000);
+                    }
+                });
+            });
+            
+            // Track section views with throttling
+            const viewedSections = new Set();
+            const sectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                        const sectionId = entry.target.id || entry.target.className.split(' ')[0] || 'unknown-section';
+                        
+                        if (!viewedSections.has(sectionId)) {
+                            trackEvent('Page Engagement', 'Section View', sectionId);
+                            viewedSections.add(sectionId);
+                        }
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            document.querySelectorAll('section').forEach(section => {
+                sectionObserver.observe(section);
+            });
+            
+            // Track time on page (only once when leaving)
+            let startTime = Date.now();
+            let timeTracked = false;
+            
+            const trackTimeOnPage = () => {
+                if (!timeTracked) {
+                    const timeOnPage = Math.round((Date.now() - startTime) / 1000);
+                    if (timeOnPage > 5) { // Only track if user stayed more than 5 seconds
+                        trackEvent('Engagement', 'Time on Page', timeOnPage + ' seconds');
+                        timeTracked = true;
+                    }
+                }
+            };
+            
+            window.addEventListener('beforeunload', trackTimeOnPage);
+            
+            // Also track when user switches tabs (indicates engagement)
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    trackTimeOnPage();
+                }
+            });
+        }
+
+        // Error handling and user feedback
+        function initializeErrorHandling() {
+            let errorCount = 0;
+            const maxErrors = 3; // Limit error notifications
+            
+            window.addEventListener('error', function(e) {
+                errorCount++;
+                console.error('JavaScript Error:', e.error);
+                
+                // Only show user notification for first few errors to avoid spam
+                if (errorCount <= maxErrors) {
+                    showToast('遇到了一个小问题，页面功能可能受到影响', 'error');
+                }
+                
+                // In production, you might want to send this to an error tracking service
+                // like Sentry or LogRocket
+            });
+            
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('Unhandled Promise Rejection:', e.reason);
+                
+                // Only show network-related errors to users
+                if (e.reason && (e.reason.name === 'TypeError' || e.reason.name === 'NetworkError')) {
+                    showToast('网络请求失败，请检查网络连接', 'error');
+                }
+                
+                // Prevent the default browser behavior
+                e.preventDefault();
+            });
+            
+            // Handle fetch errors specifically
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                return originalFetch.apply(this, args)
+                    .catch(error => {
+                        console.error('Fetch Error:', error);
+                        showToast('网络连接失败，请稍后重试', 'error');
+                        throw error;
+                    });
+            };
+        }
+
+        // Dynamic content loading (for future features)
+        function initializeDynamicContent() {
+            // Lazy load images
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            if (img.dataset.src) {
+                                img.src = img.dataset.src;
+                                img.classList.remove('lazy');
+                                imageObserver.unobserve(img);
+                            }
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('img[data-src]').forEach(img => {
+                    imageObserver.observe(img);
+                });
+            }
+            
+            // Progressive enhancement for animations
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.documentElement.style.setProperty('--animation-duration', '0.01ms');
+                document.documentElement.style.setProperty('--transition-duration', '0.01ms');
+            }
+        }
+
+        // Theme management
+        function initializeThemeManagement() {
+            // Detect system theme preference
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+            
+            function updateTheme(isDark) {
+                if (isDark) {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            }
+            
+            // Initial theme setup
+            updateTheme(prefersDark.matches);
+            
+            // Listen for theme changes
+            prefersDark.addEventListener('change', (e) => {
+                updateTheme(e.matches);
+            });
+            
+            // Manual theme toggle (for future implementation)
+            window.toggleTheme = function() {
+                document.body.classList.toggle('dark-theme');
+                const isDark = document.body.classList.contains('dark-theme');
+                localStorage.setItem('theme-preference', isDark ? 'dark' : 'light');
+            };
+        }
+
+        // Initialize all modules
+        function initializeApp() {
+            initializeSearch();
+            initializePerformanceMonitoring();
+            initializeAccessibility();
+            initializeAnalytics();
+            initializeErrorHandling();
+            initializeDynamicContent();
+            initializeThemeManagement();
+        }
+
+        // Call initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+        // Easter eggs and fun interactions
+        let clickCount = 0;
+        document.querySelector('.logo').addEventListener('click', function() {
+            clickCount++;
+            if (clickCount >= 5) {
+                showToast('🎉 恭喜发现彩蛋！你是真正的探索者！', 'success');
+                
+                // Add some fun animations
+                document.querySelectorAll('.feature-icon, .pricing-icon').forEach((icon, index) => {
+                    setTimeout(() => {
+                        icon.style.animation = 'pulse 0.5s ease-in-out';
+                        setTimeout(() => {
+                            icon.style.animation = '';
+                        }, 500);
+                    }, index * 100);
+                });
+                
+                clickCount = 0;
+            }
+        });
+
+        // Konami code easter egg
+        let konamiCode = '';
+        const konamiSequence = 'ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightKeyBKeyA';
+        
+        document.addEventListener('keydown', function(e) {
+            konamiCode += e.code;
+            if (konamiSequence.indexOf(konamiCode) !== 0) {
+                konamiCode = '';
+            }
+            if (konamiCode === konamiSequence) {
+                showToast('🎮 Konami Code 激活！你是真正的游戏玩家！', 'success');
+                document.body.style.filter = 'hue-rotate(180deg)';
+                setTimeout(() => {
+                    document.body.style.filter = '';
+                }, 3000);
+                konamiCode = '';
+            }
+        });
+
+        // Advanced form validation
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validateForm(form) {
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    markFieldAsError(input, '此字段为必填项');
+                    isValid = false;
+                } else if (input.type === 'email' && !validateEmail(input.value)) {
+                    markFieldAsError(input, '请输入有效的邮箱地址');
+                    isValid = false;
+                } else {
+                    markFieldAsValid(input);
+                }
+            });
+            
+            return isValid;
+        }
+
+        function markFieldAsError(input, message) {
+            input.style.borderColor = 'var(--danger-color)';
+            
+            let errorMsg = input.parentNode.querySelector('.error-message');
+            if (!errorMsg) {
+                errorMsg = document.createElement('div');
+                errorMsg.className = 'error-message';
+                errorMsg.style.cssText = `
+                    color: var(--danger-color);
+                    font-size: 0.875rem;
+                    margin-top: 0.5rem;
+                `;
+                input.parentNode.appendChild(errorMsg);
+            }
+            errorMsg.textContent = message;
+        }
+
+        function markFieldAsValid(input) {
+            input.style.borderColor = 'var(--secondary-color)';
+            const errorMsg = input.parentNode.querySelector('.error-message');
+            if (errorMsg) {
+                errorMsg.remove();
+            }
+        }
+
+        // Enhanced loading states
+        function showLoadingState(element, loadingText = '加载中...') {
+            const originalText = element.innerHTML;
+            element.innerHTML = `<div class="loading-spinner"></div> ${loadingText}`;
+            element.disabled = true;
+            
+            return function hideLoading() {
+                element.innerHTML = originalText;
+                element.disabled = false;
+            };
+        }
+
+        // URL state management (for future SPA features) - Fixed for iframe environment
+        function initializeRouting() {
+            // Skip URL manipulation in iframe/sandboxed environments
+            if (window.self !== window.top || window.location.protocol === 'about:') {
+                console.log('Routing disabled in sandboxed environment');
+                return;
+            }
+            
+            // Check if we can safely use history API
+            function canUseHistoryAPI() {
+                try {
+                    window.history.pushState({}, '', window.location.href);
+                    return true;
+                } catch (e) {
+                    console.log('History API not available:', e.message);
+                    return false;
+                }
+            }
+            
+            if (!canUseHistoryAPI()) {
+                return;
+            }
+            
+            function updateURL(hash) {
+                try {
+                    if (window.location.hash !== hash) {
+                        window.history.pushState(null, null, hash);
+                    }
+                } catch (e) {
+                    console.log('Cannot update URL:', e.message);
+                }
+            }
+            
+            function handleRouteChange() {
+                const hash = window.location.hash.substring(1);
+                const section = document.getElementById(hash);
+                
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            window.addEventListener('popstate', handleRouteChange);
+            
+            // Update URL when scrolling to sections (with throttling)
+            const sections = document.querySelectorAll('section[id]');
+            let lastUrlUpdate = 0;
+            
+            const sectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.7) {
+                        const now = Date.now();
+                        // Throttle URL updates to avoid spam
+                        if (now - lastUrlUpdate > 1000) {
+                            updateURL('#' + entry.target.id);
+                            lastUrlUpdate = now;
+                        }
+                    }
+                });
+            }, { threshold: 0.7 });
+            
+            sections.forEach(section => sectionObserver.observe(section));
+        }
+
+        // Service Worker registration (for future PWA features)
+        function initializeServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(function(registration) {
+                            console.log('SW registered: ', registration);
+                        })
+                        .catch(function(registrationError) {
+                            console.log('SW registration failed: ', registrationError);
+                        });
+                });
+            }
+        }
+
+        // Initialize enhanced features
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                initializeRouting();
+                initializeParallaxEffect();
+                // initializeServiceWorker(); // Uncomment when SW is implemented
+            } catch (error) {
+                console.error('Error initializing enhanced features:', error);
+            }
+        });
+
+        // Export functions for potential external use
+        window.ArtFolioAI = {
+            showSignupModal,
+            showDemoModal,
+            closeModal,
+            showToast,
+            selectPlan,
+            toggleTheme: window.toggleTheme,
+            validateForm
+        };
+
+        console.log('🎨 ArtFolio AI Website Loaded Successfully! 🚀');
+        console.log('💡 Interactive features available:');
+        console.log('• Click the logo 5 times for animation surprise');
+        console.log('• Try the Konami code: ↑↑↓↓←→←→BA');
+        console.log('• All scroll and click interactions are optimized');
+        
+        // Show a welcome message after page loads
+        setTimeout(() => {
+            if (typeof showToast === 'function') {
+                showToast('欢迎来到 ArtFolio AI! 🎨✨', 'success');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
